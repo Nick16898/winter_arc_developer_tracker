@@ -112,9 +112,8 @@
                 </div>
             </div>
 
-            <!-- Header Audio Mute Toggle & JSON Import/Export Actions -->
+            <!-- Header Sound Toggle & JSON Controls -->
             <div class="flex items-center gap-1.5">
-                <!-- Sound Toggle Button -->
                 <button id="sound-toggle-btn" onclick="toggleSoundMute()" title="Toggle Sound FX" class="touch-target px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
                     <i id="sound-icon" class="fa-solid fa-volume-high text-cyan-400"></i>
                     <span id="sound-text" class="hidden md:inline">Sound ON</span>
@@ -138,8 +137,8 @@
 
     <div id="backup-warning-banner" class="bg-gradient-to-r from-amber-500/20 via-slate-900 to-cyan-500/20 border-b border-amber-500/30 px-3 py-2 text-center text-xs flex items-center justify-between gap-2 max-w-7xl mx-auto">
         <div class="flex items-center gap-2 mx-auto">
-            <i class="fa-solid fa-triangle-exclamation text-amber-400 animate-pulse"></i>
-            <span class="text-slate-300 font-medium">Local-First Storage Active! Back up your progress regularly using <strong>Export JSON</strong>.</span>
+            <i class="fa-solid fa-shield-halved text-amber-400 animate-pulse"></i>
+            <span class="text-slate-300 font-medium">Local-First Storage Active! Save your progress anytime using <strong>Export JSON</strong>.</span>
         </div>
         <button onclick="document.getElementById('backup-warning-banner').remove()" class="text-slate-500 hover:text-slate-300 p-1">
             <i class="fa-solid fa-xmark"></i>
@@ -229,7 +228,7 @@
                 </div>
             </div>
 
-            <!-- 2. ACTIVE DAY WORKSPACE & CHECKLIST (TOP MOBILE PRIORITY) -->
+            <!-- 2. ACTIVE DAY WORKSPACE & DYNAMIC TASK CREATOR -->
             <div class="glass-card-glow rounded-2xl p-4 sm:p-5 border border-cyan-500/40 relative overflow-hidden">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
                     <div>
@@ -257,12 +256,35 @@
                     </div>
                 </div>
 
-                <!-- Daily Interactive Tasks -->
+                <!-- Custom Task Adder Input -->
+                <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 mb-4">
+                    <label class="block text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-plus-circle mr-1"></i> Add Custom Goal / Task</span>
+                        <span class="text-[10px] text-slate-400 font-normal">e.g., Learn English, JS Fundamentals</span>
+                    </label>
+                    
+                    <div class="flex flex-col sm:flex-row items-center gap-2">
+                        <input type="text" id="custom-task-input" placeholder="Type task name (e.g. Learn English, LeetCode Problem)..." class="w-full bg-slate-900 text-xs text-slate-100 border border-slate-700 rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-500 transition-colors">
+                        
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <select id="custom-task-scope" class="bg-slate-900 text-xs text-slate-300 border border-slate-700 rounded-xl px-2.5 py-2.5 focus:outline-none focus:border-cyan-500">
+                                <option value="today">Today Only</option>
+                                <option value="all">All 90 Days</option>
+                            </select>
+
+                            <button onclick="addCustomTask()" class="touch-target px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-slate-950 font-black rounded-xl text-xs shrink-0 flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Interactive Tasks List -->
                 <div id="daily-tasks-container" class="space-y-2.5">
                     <!-- Populated dynamically by JS -->
                 </div>
 
-                <!-- Daily Note Log -->
+                <!-- Daily Note Log & Badge Status -->
                 <div class="mt-4 pt-3 border-t border-slate-800">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
                         <i class="fa-solid fa-code text-cyan-400 mr-1"></i> Daily Code & Skill Log
@@ -270,7 +292,7 @@
                     <textarea id="daily-note" rows="2" placeholder="Record skills learned, projects built, or bugs fixed today..." oninput="saveDailyNote()" class="w-full bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-xl p-3 focus:outline-none focus:border-cyan-500 transition-colors resize-none"></textarea>
                     
                     <div id="day-completion-badge" class="mt-3 p-3 rounded-xl bg-slate-900 text-center border border-slate-800">
-                        <span class="text-xs font-medium text-slate-400">Status: <strong class="text-amber-400">0/5 Tasks Completed</strong></span>
+                        <span class="text-xs font-medium text-slate-400">Status: <strong class="text-amber-400">0 Tasks Completed</strong></span>
                     </div>
                 </div>
             </div>
@@ -297,6 +319,7 @@
                 </figure>
             </div>
 
+            <!-- 4. 90-DAY EXECUTION GRID MATRIX -->
             <div class="glass-card rounded-2xl p-4 border border-slate-800">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
                     <div>
@@ -313,7 +336,6 @@
                     </div>
                 </div>
 
-                <!-- High-Legibility Crisp Responsive Grid Matrix -->
                 <div id="days-grid" class="grid grid-cols-5 sm:grid-cols-9 md:grid-cols-10 gap-2 max-h-[380px] overflow-y-auto custom-scrollbar p-1">
                     <!-- Populated dynamically by JS -->
                 </div>
@@ -463,7 +485,7 @@
         const TOTAL_DAYS = 90;
         const START_DATE = new Date('2026-09-28');
         
-        const TASK_DEFINITIONS = [
+        const DEFAULT_TASKS = [
             { id: 'walk', normalText: 'Workout / Walk (21-30 Mins)', badDayText: '10-Min Minimum Walk', icon: 'fa-person-walking', color: 'text-emerald-400', coins: 10, xp: 25 },
             { id: 'skillUpdate', normalText: 'Learn & Refactor Skill / Code', badDayText: 'Learn & Refactor Micro Skill', icon: 'fa-code', color: 'text-cyan-400', coins: 15, xp: 40 },
             { id: 'study20m', normalText: '20-Min Focused Deep Learning', badDayText: '20-Min Core Learning', icon: 'fa-book-bookmark', color: 'text-blue-400', coins: 15, xp: 35 },
@@ -522,8 +544,8 @@
                 const gain = audioCtx.createGain();
 
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
-                osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5 note
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15);
 
                 gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
@@ -542,7 +564,7 @@
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                const freqs = [523.25, 659.25, 783.99, 1046.50]; // C Major Chord
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
                 freqs.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
@@ -618,13 +640,13 @@
         });
 
         function saveStateToLocalStorage() {
-            localStorage.setItem('winterArcData_nikhil_v6', JSON.stringify(appData));
+            localStorage.setItem('winterArcData_nikhil_v7', JSON.stringify(appData));
             updateStatsSummary();
             updateCharts();
         }
 
         function loadStateFromLocalStorage() {
-            const saved = localStorage.getItem('winterArcData_nikhil_v6') || localStorage.getItem('winterArcData_nikhil_v5');
+            const saved = localStorage.getItem('winterArcData_nikhil_v7') || localStorage.getItem('winterArcData_nikhil_v6');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -640,8 +662,11 @@
                         dayNum: d,
                         isBadDay: false,
                         tasks: { walk: false, skillUpdate: false, study20m: false, healthyMeal: false, cleanSleep: false },
+                        customTasks: [],
                         note: ''
                     };
+                } else if (!appData.days[d].customTasks) {
+                    appData.days[d].customTasks = [];
                 }
             }
         }
@@ -723,8 +748,13 @@
 
             for (let d = 1; d <= TOTAL_DAYS; d++) {
                 const dayData = appData.days[d];
-                const completedTasks = Object.values(dayData.tasks).filter(Boolean).length;
-                const isFullyDone = completedTasks === 5;
+                
+                const defaultCompleted = Object.values(dayData.tasks).filter(Boolean).length;
+                const customCompleted = (dayData.customTasks || []).filter(t => t.completed).length;
+                const totalCompleted = defaultCompleted + customCompleted;
+                const totalTarget = DEFAULT_TASKS.length + (dayData.customTasks ? dayData.customTasks.length : 0);
+
+                const isFullyDone = totalCompleted >= totalTarget && totalTarget > 0;
                 const isSelected = d === appData.selectedDay;
 
                 const node = document.createElement('button');
@@ -741,7 +771,7 @@
                         bgClass = 'bg-cyan-500/10 border-cyan-500/50 text-cyan-300';
                         fractionClass = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
                     }
-                } else if (completedTasks > 0) {
+                } else if (totalCompleted > 0) {
                     bgClass = 'bg-slate-800/80 border-slate-700 text-slate-200';
                     fractionClass = 'bg-slate-900 text-slate-300 border-slate-700';
                 }
@@ -759,7 +789,7 @@
                 node.innerHTML = `
                     <span class="text-[10px] font-black tracking-wider leading-none uppercase">D${d < 10 ? '0' + d : d}</span>
                     <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border leading-none ${fractionClass}">
-                        ${completedTasks}/5
+                        ${totalCompleted}/${totalTarget}
                     </span>
                 `;
                 gridContainer.appendChild(node);
@@ -786,7 +816,8 @@
             const container = document.getElementById('daily-tasks-container');
             container.innerHTML = '';
 
-            TASK_DEFINITIONS.forEach(task => {
+            // Render Default Core Tasks
+            DEFAULT_TASKS.forEach(task => {
                 const isChecked = !!dayData.tasks[task.id];
                 const taskLabel = dayData.isBadDay ? task.badDayText : task.normalText;
 
@@ -804,34 +835,130 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[10px] text-amber-400/80 font-bold">+${task.coins}🪙</span>
-                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTaskStatus('${task.id}')" class="w-5 h-5 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDefaultTaskStatus('${task.id}')" class="w-5 h-5 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900">
                     </div>
                 `;
                 container.appendChild(item);
             });
 
+            // Render Custom User Tasks
+            if (dayData.customTasks && dayData.customTasks.length > 0) {
+                dayData.customTasks.forEach((cTask, idx) => {
+                    const item = document.createElement('div');
+                    item.className = `touch-target flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        cTask.completed 
+                            ? 'bg-cyan-500/10 border-cyan-500/40 text-slate-100' 
+                            : 'bg-slate-950 border-slate-800 text-slate-400'
+                    }`;
+
+                    item.innerHTML = `
+                        <div class="flex items-center gap-2.5 flex-1 pr-2">
+                            <i class="fa-solid fa-bullseye text-purple-400 text-sm"></i>
+                            <span class="text-xs font-semibold leading-tight ${cTask.completed ? 'line-through text-slate-400' : 'text-slate-200'}">${cTask.name}</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 shrink-0">
+                            <span class="text-[10px] text-amber-400/80 font-bold">+10🪙</span>
+                            <input type="checkbox" ${cTask.completed ? 'checked' : ''} onchange="toggleCustomTaskStatus(${idx})" class="w-5 h-5 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900 cursor-pointer">
+                            <button onclick="deleteCustomTask(${idx})" title="Remove Task" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
             updateCompletionBadge();
         }
 
-        function toggleTaskStatus(taskId) {
+        function addCustomTask() {
+            const input = document.getElementById('custom-task-input');
+            const scope = document.getElementById('custom-task-scope').value;
+            const taskName = input.value.trim();
+
+            if (!taskName) {
+                showToast('Please type a task name first!', 'warning');
+                return;
+            }
+
+            const newTaskObj = {
+                id: 'custom_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+                name: taskName,
+                completed: false
+            };
+
+            if (scope === 'all') {
+                for (let d = 1; d <= TOTAL_DAYS; d++) {
+                    if (!appData.days[d].customTasks) appData.days[d].customTasks = [];
+                    appData.days[d].customTasks.push({ ...newTaskObj });
+                }
+                showToast(`Added "${taskName}" across ALL 90 days!`, 'success');
+            } else {
+                const currentDay = appData.selectedDay;
+                if (!appData.days[currentDay].customTasks) appData.days[currentDay].customTasks = [];
+                appData.days[currentDay].customTasks.push(newTaskObj);
+                showToast(`Added "${taskName}" to Day ${currentDay}!`, 'success');
+            }
+
+            input.value = '';
+            saveStateToLocalStorage();
+            renderDaysGrid();
+            renderActiveDayDetails();
+        }
+
+        function deleteCustomTask(idx) {
+            const d = appData.selectedDay;
+            if (appData.days[d].customTasks && appData.days[d].customTasks[idx]) {
+                const removedName = appData.days[d].customTasks[idx].name;
+                appData.days[d].customTasks.splice(idx, 1);
+                saveStateToLocalStorage();
+                renderDaysGrid();
+                renderActiveDayDetails();
+                showToast(`Removed "${removedName}"`, 'info');
+            }
+        }
+
+        function toggleDefaultTaskStatus(taskId) {
             const d = appData.selectedDay;
             const currentStatus = appData.days[d].tasks[taskId];
             appData.days[d].tasks[taskId] = !currentStatus;
             
-            if (!currentStatus) {
-                playSoftChime();
-            }
+            if (!currentStatus) playSoftChime();
 
             saveStateToLocalStorage();
             renderDaysGrid();
             renderActiveDayDetails();
             renderRewardsGrid();
 
-            const completedCount = Object.values(appData.days[d].tasks).filter(Boolean).length;
-            if (completedCount === 5) {
+            checkDayCompletionTrigger(d);
+        }
+
+        function toggleCustomTaskStatus(idx) {
+            const d = appData.selectedDay;
+            const currentStatus = appData.days[d].customTasks[idx].completed;
+            appData.days[d].customTasks[idx].completed = !currentStatus;
+
+            if (!currentStatus) playSoftChime();
+
+            saveStateToLocalStorage();
+            renderDaysGrid();
+            renderActiveDayDetails();
+            renderRewardsGrid();
+
+            checkDayCompletionTrigger(d);
+        }
+
+        function checkDayCompletionTrigger(d) {
+            const dayData = appData.days[d];
+            const defaultDone = Object.values(dayData.tasks).filter(Boolean).length;
+            const customDone = (dayData.customTasks || []).filter(t => t.completed).length;
+            const totalDone = defaultDone + customDone;
+            const totalTarget = DEFAULT_TASKS.length + (dayData.customTasks ? dayData.customTasks.length : 0);
+
+            if (totalDone === totalTarget && totalTarget > 0) {
                 playVictoryChord();
                 triggerCelebrationConfetti();
-                showToast(`GREAT JOB NIKHIL! DAY ${d} PERFECTLY COMPLETED! 🎉`, 'success');
+                showToast(`GREAT JOB NIKHIL! DAY ${d} ALL ${totalTarget} TASKS COMPLETED! 🎉`, 'success');
             }
         }
 
@@ -852,38 +979,55 @@
         function updateCompletionBadge() {
             const d = appData.selectedDay;
             const dayData = appData.days[d];
-            const completedCount = Object.values(dayData.tasks).filter(Boolean).length;
+            
+            const defaultDone = Object.values(dayData.tasks).filter(Boolean).length;
+            const customDone = (dayData.customTasks || []).filter(t => t.completed).length;
+            const totalDone = defaultDone + customDone;
+            const totalTarget = DEFAULT_TASKS.length + (dayData.customTasks ? dayData.customTasks.length : 0);
+
             const badge = document.getElementById('day-completion-badge');
 
-            if (completedCount === 5) {
+            if (totalDone === totalTarget && totalTarget > 0) {
                 badge.className = 'mt-3 p-2.5 rounded-xl bg-cyan-500/10 text-center border border-cyan-500/30';
-                badge.innerHTML = `<span class="text-xs font-bold text-cyan-400"><i class="fa-solid fa-trophy mr-1"></i> Perfect Day Achieved! Streak Maintained.</span>`;
+                badge.innerHTML = `<span class="text-xs font-bold text-cyan-400"><i class="fa-solid fa-trophy mr-1"></i> All ${totalTarget}/${totalTarget} Tasks Complete! Streak Secured.</span>`;
             } else {
                 badge.className = 'mt-3 p-2.5 rounded-xl bg-slate-900 text-center border border-slate-800';
-                badge.innerHTML = `<span class="text-xs font-medium text-slate-400">Status: <strong class="text-amber-400">${completedCount}/5 Tasks Completed</strong></span>`;
+                badge.innerHTML = `<span class="text-xs font-medium text-slate-400">Status: <strong class="text-amber-400">${totalDone}/${totalTarget} Tasks Completed</strong></span>`;
             }
         }
 
         function updateStatsSummary() {
             let streak = 0;
-            let totalCompletedDays = 0;
             let totalCoins = 0;
             let totalXP = 0;
 
             for (let d = 1; d <= TOTAL_DAYS; d++) {
                 const day = appData.days[d];
-                let dayTasksCount = 0;
-
-                TASK_DEFINITIONS.forEach(task => {
+                
+                let defaultDone = 0;
+                DEFAULT_TASKS.forEach(task => {
                     if (day.tasks[task.id]) {
-                        dayTasksCount++;
+                        defaultDone++;
                         totalCoins += task.coins;
                         totalXP += task.xp;
                     }
                 });
 
-                if (dayTasksCount === 5) {
-                    totalCompletedDays++;
+                let customDone = 0;
+                if (day.customTasks) {
+                    day.customTasks.forEach(ct => {
+                        if (ct.completed) {
+                            customDone++;
+                            totalCoins += 10;
+                            totalXP += 20;
+                        }
+                    });
+                }
+
+                const totalDone = defaultDone + customDone;
+                const totalTarget = DEFAULT_TASKS.length + (day.customTasks ? day.customTasks.length : 0);
+
+                if (totalDone === totalTarget && totalTarget > 0) {
                     streak++;
                     totalCoins += 25;
                     totalXP += 50;
@@ -907,8 +1051,11 @@
                 for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
                     const dayNum = w * 7 + dayOffset;
                     if (dayNum <= TOTAL_DAYS) {
-                        const count = Object.values(appData.days[dayNum].tasks).filter(Boolean).length;
-                        if (count < 5) weekComplete = false;
+                        const day = appData.days[dayNum];
+                        const dDone = Object.values(day.tasks).filter(Boolean).length;
+                        const cDone = (day.customTasks || []).filter(t => t.completed).length;
+                        const tTarget = DEFAULT_TASKS.length + (day.customTasks ? day.customTasks.length : 0);
+                        if ((dDone + cDone) < tTarget) weekComplete = false;
                     }
                 }
                 if (weekComplete) perfectWeeks++;
@@ -987,7 +1134,7 @@
             triggerCelebrationConfetti();
             saveStateToLocalStorage();
             renderRewardsGrid();
-            showToast('Treat Unlocked! Enjoy your well-deserved reward Nikhil! 🍿', 'success');
+            showToast('Treat Unlocked! Enjoy your reward Nikhil! 🍿', 'success');
         }
 
         function initCharts() {
@@ -995,7 +1142,7 @@
             habitRadarChart = new Chart(ctxRadar, {
                 type: 'radar',
                 data: {
-                    labels: TASK_DEFINITIONS.map(t => t.normalText.split(' ')[0]),
+                    labels: DEFAULT_TASKS.map(t => t.normalText.split(' ')[0]),
                     datasets: [{
                         label: 'Consistency',
                         data: getHabitConsistencyData(),
@@ -1069,7 +1216,7 @@
         }
 
         function getHabitConsistencyData() {
-            return TASK_DEFINITIONS.map(task => {
+            return DEFAULT_TASKS.map(task => {
                 let count = 0;
                 for (let d = 1; d <= TOTAL_DAYS; d++) {
                     if (appData.days[d].tasks[task.id]) count++;
@@ -1220,6 +1367,7 @@
             
             let colorClass = 'bg-slate-900 border-slate-700 text-slate-200';
             if (type === 'success') colorClass = 'bg-slate-900 border-cyan-500/50 text-cyan-200';
+            if (type === 'warning') colorClass = 'bg-slate-900 border-amber-500/50 text-amber-200';
 
             toast.className = `p-3 rounded-xl border ${colorClass} shadow-xl text-xs font-semibold flex items-center gap-2 pointer-events-auto transition-all`;
             toast.innerHTML = `<span>${message}</span>`;
